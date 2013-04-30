@@ -4,12 +4,14 @@ Quantify fluorescence around fluorescently-labelled centromeres in
 another channel.
 """
 
-import numpy as np
+#import numpy as np
 from scipy import ndimage as nd
-from skimage import io as simio, filter as sfilter, morphology.selem as selem
+#from skimage import io
+from skimage import filter as imfilter
+from skimage.morphology import selem
 
 def get_centromere_neighbourhood(im, dilation_size=3, threshold=None,
-                                 threshold_function=sfilter.threshold_otsu):
+                                 threshold_function=imfilter.threshold_otsu):
     """Obtain the locations near centromeres in an image.
 
     Parameters
