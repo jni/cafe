@@ -8,7 +8,7 @@ another channel.
 from scipy import ndimage as nd
 #from skimage import io
 from skimage import filter as imfilter
-from skimage.morphology import selem
+from skimage.morphology import selem, remove_small_objects
 
 def get_centromere_neighbourhood(im, dilation_size=3, threshold=None,
                                  threshold_function=imfilter.threshold_otsu):
@@ -37,3 +37,42 @@ def get_centromere_neighbourhood(im, dilation_size=3, threshold=None,
     strel = selem.disk(dilation_size)
     centro = nd.binary_dilation(centro, structure=strel)
     return centro
+
+
+def get_chromatin(im, background_diameter=51, opening_size=2, opening_iter=2,
+                  size_filter=256):
+    """Find the chromatin in an unevenly illuminated image.
+
+    Parameters
+    ----------
+    im : np.ndarray, shape (M, N)
+        The chromatin grayscale image.
+    background_diameter : int, optional
+        The diameter of the block size in which to find the background. (This
+        is used by the scikit-image function `threshold_adaptive`.)
+        (default: 51)
+    opening_size : int, optional
+        Perform a binary opening with a disk of this radius. (default: 2)
+    opening_iter : int, optional
+        Perform this many opening iterations. (default: 2)
+    size_filter : int, optional
+        After the morphological opening, filter out segments smaller than this
+        size. (default: 256)
+
+    Returns
+    -------
+    chrs : np.ndarray, shape (M, N)
+        A thresholded image of the chromatin regions.
+    """
+    if im.ndim == 3 and im.shape[2] == 3:
+        im = im[..., 0]
+    fg = imfilter.threshold_adaptive(im, background_diameter)
+    # on an unevenly lit image, `fg` will have all sorts of muck lying around,
+    # in addition to the chromatin. Thankfully, the muck is noisy and full of
+    # holes, whereas the chromatin is solid. An opening followed by a size
+    # filtering removes it quite effectively.
+    strel = selem.disk(opening_size)
+    fg_open = nd.binary_opening(fg, strel, iterations=opening_iter)
+    chrs = remove_small_objects(fg_open, size_filter)
+    return chrs
+
