@@ -4,11 +4,12 @@ Quantify fluorescence around fluorescently-labelled centromeres in
 another channel.
 """
 
-#import numpy as np
+import numpy as np
 from scipy import ndimage as nd
 #from skimage import io
 from skimage import filter as imfilter
 from skimage.morphology import selem, remove_small_objects
+
 
 def get_centromere_neighbourhood(im, dilation_size=3, threshold=None,
                                  threshold_function=imfilter.threshold_otsu):
@@ -75,4 +76,54 @@ def get_chromatin(im, background_diameter=51, opening_size=2, opening_iter=2,
     fg_open = nd.binary_opening(fg, strel, iterations=opening_iter)
     chrs = remove_small_objects(fg_open, size_filter)
     return chrs
+
+
+def rnapii_centromere_vs_chromatin(rgb_im, channels=(0, 1, 2),
+                                   normalise_to_1=True,
+                                   centromere_dilation_size=3,
+                                   centromere_threshold=None,
+                                   centromere_threshold_function=
+                                                    imfilter.threshold_otsu,
+                                   chromatin_background_diameter=51,
+                                   chromatin_opening_size=2,
+                                   chromatin_opening_iter=2,
+                                   chromatin_size_filter=256):
+    """Find intensity differences in the RNA-Pol-II channel.
+
+    Parameters
+    ----------
+    rgb_im : np.ndarray, shape (M, N, 3)
+        The 3-channel image containing an RNA-Pol-II signal, a centromere
+        signal, and a chromatin signal.
+    channels : tuple of int, optional
+        The channels corresponding to RNA-Pol-II, centromere, and chromatin
+        signals, respectively. Default: (0, 1, 2).
+    normalize_to_1: bool, optional
+        Make the maximum red channel value 1.
+    centromere_* : various types, optional
+        Parameters passed through to `get_centromere_neighbourhood`.
+    chromatin_* : various types, optional
+        Parameters passed through to `get_chromatin`.
+
+    Returns
+    -------
+    diff : float
+        The average difference in the RNA Pol II channel between centromere-
+        -adjacent regions and other chromatin regions.
+    """
+    rnapii, centromeres, chromatin = [rgb_im[..., i] for i in channels]
+    centromeric_regions = get_centromere_neighbourhood(centromeres,
+                                centromere_dilation_size, centromere_threshold,
+                                centromere_threshold_function)
+    chromatin_regions = get_chromatin(chromatin, chromatin_background_diameter,
+                                      chromatin_opening_size,
+                                      chromatin_opening_iter,
+                                      chromatin_size_filter)
+    chromatin_regions *= True - centromeric_regions
+    if normalise_to_1:
+        rnapii = rnapii.astype(float) / rnapii.max()
+    rnapii = rnapii.transpose(channels)
+    diff = (np.mean(rnapii[centromeric_regions]) -
+            np.mean(rnapii[chromatin_regions]))
+    return diff
 
