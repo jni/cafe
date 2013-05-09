@@ -122,7 +122,6 @@ def rnapii_centromere_vs_chromatin(rgb_im, channels=(0, 1, 2),
     chromatin_regions *= True - centromeric_regions
     if normalise_to_1:
         rnapii = rnapii.astype(float) / rnapii.max()
-    rnapii = rnapii.transpose(channels)
     diff = (np.mean(rnapii[centromeric_regions]) -
             np.mean(rnapii[chromatin_regions]))
     return diff
