@@ -1,0 +1,10 @@
+Name: cafe
+Author: Juan Nunez-Iglesias <juan.n@unimelb.edu.au>
+Summary: Centromere-associated fluorescence estimator
+
+Library:
+    Modules: cafe
+
+Executable: cafe
+    Module: cafe_main
+    Function: main
