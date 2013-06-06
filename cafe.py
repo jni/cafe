@@ -107,9 +107,9 @@ def rnapii_centromere_vs_chromatin(rgb_im, channels=(0, 1, 2),
 
     Returns
     -------
-    diff : float
-        The average difference in the RNA Pol II channel between centromere-
-        -adjacent regions and other chromatin regions.
+    rnapii_centro, rnapii_chrom : 1D np.ndarray
+        The RNA Pol II channel intensity in centromere-adjacent regions and
+        in other chromatin regions.
     """
     rnapii, centromeres, chromatin = [rgb_im[..., i] for i in channels]
     centromeric_regions = get_centromere_neighbourhood(centromeres,
@@ -122,7 +122,7 @@ def rnapii_centromere_vs_chromatin(rgb_im, channels=(0, 1, 2),
     chromatin_regions *= True - centromeric_regions
     if normalise_to_1:
         rnapii = rnapii.astype(float) / rnapii.max()
-    diff = (np.mean(rnapii[centromeric_regions]) -
-            np.mean(rnapii[chromatin_regions]))
-    return diff
+    rnapii_centro = rnapii[centromeric_regions]
+    rnapii_chrom = rnapii[chromatin_regions]
+    return rnapii_centro, rnapii_chrom
 
