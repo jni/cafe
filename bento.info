@@ -3,7 +3,7 @@ Author: Juan Nunez-Iglesias <juan.n@unimelb.edu.au>
 Summary: Centromere-associated fluorescence estimator
 
 Library:
-    Modules: cafe
+    Modules: cafe, cafe_main
 
 Executable: cafe
     Module: cafe_main
