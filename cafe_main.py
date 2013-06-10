@@ -63,14 +63,14 @@ def main():
         chromatin_images = [cafe.get_chromatin(im[..., 2]) for
                             im in test_images + control_images]
         for fn, im in zip(chromatin_image_fns, chromatin_images):
-            io.imsave(fn + '_chromatin.tif', im.astype(np.uint8))
+            io.imsave(fn + '_chromatin.tif', 255 * im.astype(np.uint8))
     if args.save_centromeres:
         centromere_image_fns = map(strip_extension,
                                    args.test_cases + args.controls)
         centromere_images = [cafe.get_centromere_neighbourhood(im[..., 1]) for
                              im in test_images + control_images]
         for fn, im in zip(centromere_image_fns, centromere_images):
-            io.imsave(fn + '_centromere.tif', im.astype(np.uint8))
+            io.imsave(fn + '_centromere.tif', 255 * im.astype(np.uint8))
 
     plt.boxplot(list(test_rnapii) + list(control_rnapii))
     plt.savefig(args.output_file, bbox_inches='tight')
