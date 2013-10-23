@@ -11,6 +11,31 @@ from skimage import filter as imfilter
 from skimage.morphology import selem, remove_small_objects
 
 
+def otsu(image, offset=0.0, factor=1.0):
+    """Threshold an image using Otsu's method with an optional offset.
+
+    Parameters
+    ----------
+    image : array
+        The image to be thresholded.
+    offset : float, optional
+        Change the computed threshold by subtracting a fixed amount.
+    factor : float, optional
+        Change the computed threshold by multiplying by a constant
+        factor.
+
+    Returns
+    -------
+    image_t : array of bool
+        The thresholded image.
+    """
+    t = imfilter.threshold_otsu(image)
+    t -= offset
+    t *= factor
+    image_t = image > t
+    return image_t
+
+
 def get_centromere_neighbourhood(im, dilation_size=3, threshold=None,
                                  threshold_function=imfilter.threshold_otsu):
     """Obtain the locations near centromeres in an image.
