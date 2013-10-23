@@ -36,6 +36,35 @@ def otsu(image, offset=0.0, factor=1.0):
     return image_t
 
 
+def encode_centro_telomeres_multichannel(img, *args, **kwargs):
+    """Like ``encode_centro_telomeres``, but input images are in channels.
+
+    Parameters
+    ----------
+    img : array, shape (M, N, {2, 3})
+        The input image. Centromeres should be in channel 0 (red),
+        telomeres in channel 1 (green), and channel 2 will be ignored.
+    *args, **kwargs : arbitrary
+        Parameters to ``encode_centro_telomeres``.
+
+    Returns
+    -------
+    encoded_regions : array of int, shape (M, N)
+        A uint8 image with the following values:
+         - 0: background
+         - 1: telomeres
+         - 2: centromeres
+         - 3: centromere/telomere overlap
+
+    See Also
+    --------
+    ``encode_centro_telomeres``.
+    """
+    encoded_regions = encode_centro_telomeres(img[..., 0], img[..., 1],
+                                              *args, **kwargs)
+    return encoded_regions * 64
+
+
 def encode_centro_telomeres(image_centro, image_telo,
                             centro_offset=0.0, centro_factor=1.0,
                             centro_min_size=36, centro_radius=10,
