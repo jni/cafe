@@ -36,6 +36,58 @@ def otsu(image, offset=0.0, factor=1.0):
     return image_t
 
 
+def encode_centro_telomeres(image_centro, image_telo,
+                            centro_offset=0.0, centro_factor=1.0,
+                            centro_min_size=36, centro_radius=10,
+                            telo_offset=0.0, telo_adapt_radius=49,
+                            telo_open_radius=4):
+    """Find centromeres, telomeres, and their overlap.
+
+    Parameters
+    ----------
+    image_centro : array, shape (M, N)
+        The grayscale channel for centromeres.
+    image_telo : array, shape (M, N)
+        The grayscale channel for telomeres.
+    centro_offset : float, optional
+        Offset Otsu's threshold by this amount (i.e. be less stringent
+        about what image intensity constitutes a centromere)
+    centro_factor : float, optional
+        Offset Otsu's threshold by a multiplicative constant.
+    centro_min_size : int, optional
+        Remove objects smaller than this, as they would be too small to
+        be a centromere.
+    centro_radius : int, optional
+        Consider anything within this radius to be "near" a centromere.
+    telo_offset : float, optional
+        Offset the telomere image threshold by this amount.
+    telo_adapt_radius : int, optional
+        Use this radius to threshold telomere image adaptively.
+    telo_open_radius : int, optional
+        Use this radius for a binary opening of thresholded telomeres
+        (removes noise).
+
+    Returns
+    -------
+    encoded_regions : array of int, shape (M, N)
+        A uint8 image with the following values:
+         - 0: background
+         - 1: telomeres
+         - 2: centromeres
+         - 3: centromere/telomere overlap
+    """
+    centros = otsu(image_centro, centro_offset, centro_factor)
+    centros = remove_small_objects(centros, centro_min_size)
+    centro_strel = selem.disk(centro_radius)
+    centros = nd.binary_dilation(centros, structure=centro_strel)
+    telos = imfilter.threshold_adaptive(image_telo, telo_adapt_radius,
+                                        offset=telo_offset)
+    telo_strel = selem.disk(telo_open_radius)
+    telos = nd.binary_opening(telos, structure=telo_strel)
+    encoded_regions = 2 * centros.astype(np.uint8) + telos
+    return encoded_regions
+
+
 def get_centromere_neighbourhood(im, dilation_size=3, threshold=None,
                                  threshold_function=imfilter.threshold_otsu):
     """Obtain the locations near centromeres in an image.
