@@ -1,9 +1,7 @@
-import sys
-import cafe
 import numpy as np
-from skimage import viewer
 from skimage.viewer.plugins.overlayplugin import OverlayPlugin
 from skimage.viewer.widgets import Slider
+import cafe
 
 
 def encode(im, **kwargs):
@@ -34,11 +32,3 @@ class CentroPlugin(OverlayPlugin):
         super(CentroPlugin, self).attach(image_viewer)
 
 
-def main():
-    rgbs = np.imread(sys.argv[1])
-    v = viewer.ImageViewer(rgbs)
-    v += CentroPlugin()
-    overlay = v.show()[0][0]
-
-if __name__ == '__main__':
-    main()

@@ -2,11 +2,13 @@
 
 # standard library imports
 import os
+import sys
 import argparse
 import itertools as it
 
 # dependency library imports
 import numpy as np
+import mahotas as mh
 from mahotas import io
 from matplotlib import pyplot as plt
 
@@ -32,25 +34,61 @@ def strip_extension(fn):
 
 
 parser = argparse.ArgumentParser(description=
-                            "Centromere-associated fluorescence estimator.")
-parser.add_argument('-t', '--test-cases', nargs='+', required=True,
+                                 "Chromatin-associated fluorescence estimator")
+subpar = parser.add_subparsers()
+
+centro = subpar.add_parser('centro', help="Compare centromeric intensity "
+                           "against chromatin background.")
+centro.add_argument('-t', '--test-cases', nargs='+', required=True,
                     help="Filenames of test images.")
-parser.add_argument('-c', '--controls', nargs='+', required=True,
+centro.add_argument('-c', '--controls', nargs='+', required=True,
                     help="Filenames of control images.")
-parser.add_argument('-H', '--save-chromatin', action='store_true',
+centro.add_argument('-H', '--save-chromatin', action='store_true',
                     default=False, help='Store segmented chromatin regions.')
-parser.add_argument('-C', '--save-centromeres', action='store_true',
+centro.add_argument('-C', '--save-centromeres', action='store_true',
                     default=False, help='Store segmented centromere regions.')
-parser.add_argument('-o', '--output-file', default='boxplot.pdf',
+centro.add_argument('-o', '--output-file', default='boxplot.pdf',
                     help='The name of the output file.')
 
 
+telo = subpar.add_parser('interactive', help="Quantify fluorescence on "
+                         "telomeres but not centromeres.")
+telo.add_argument('directories', nargs='+', metavar='DIR', help=
+                  "Input directories, containing four .tif files each: "
+                  "target (AuKB), telomere, centromere, and DAPI.")
+
+
+def get_command(argv):
+    """Return the command name used in the command line call.
+
+    Parameters
+    ----------
+    argv : list of string
+        The argument vector.
+
+    Returns
+    -------
+    cmd : string
+        The command name.
+    """
+    return argv[1]
+
+
 def main():
+    """Run the command-line interface."""
+    args = parser.parse_args()
+    cmd = get_command(sys.argv)
+    if cmd == 'centro':
+        run_centro(args)
+    elif cmd == 'interactive':
+        run_interactive(args)
+
+
+def run_centro(args):
     """Run the program on some input images and produce statistics and plots.
 
     Use `cafe -h` or `cafe --help` for options.
     """
-    args = parser.parse_args()
     test_images = [io.imread(fn) for fn in args.test_cases]
     test_rnapii = it.chain(*[cafe.rnapii_centromere_vs_chromatin(im)
                              for im in test_images])
@@ -74,6 +112,29 @@ def main():
 
     plt.boxplot(list(test_rnapii) + list(control_rnapii))
     plt.savefig(args.output_file, bbox_inches='tight')
+
+
+def run_interactive(args):
+    from interactive import viewer, CentroPlugin
+    from skimage import segmentation as seg
+    image_files_list = [filter(lambda x: x.lower().endswith('.tif'),
+                               os.listdir(d)) for d in args.directories]
+    images = [map(mh.imread, image_files) for image_files in image_files_list]
+    targets = [im[0] for im in images]
+    rgbs = [np.dstack(ims[1:]) for ims in images]
+    v = viewer.ImageViewer(rgbs)
+    v += CentroPlugin()
+    for s, target, rgb in zip(args.directories, targets, rgbs):
+        v = viewer.ImageViewer(rgb)
+        v += CentroPlugin()
+        overlay = v.show()[0][0]
+        overlay = seg.relabel_sequential(overlay)[0]
+        mask = (overlay == 1)
+        target_measurement = target[mask]
+        fout_txt = os.path.join(s, 'measure.txt')
+        np.savetxt(fout_txt, target_measurement)
+        fout_im = os.path.join(s, 'mask.png')
+        mh.imsave(fout_im, 64 * overlay.astype(np.uint8))
 
 
 if __name__ == '__main__':
