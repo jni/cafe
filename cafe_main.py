@@ -124,6 +124,9 @@ def run_interactive(args):
     targets = [im[0] for im in images]
     rgbs = [np.dstack(ims[1:]) for ims in images]
     for s, target, rgb in zip(args.directories, targets, rgbs):
+        if rgb.shape[-1] == 9:
+            # some single channel images are written out as RGB...
+            rgb = rgb[:, :, ::3]
         v = viewer.ImageViewer(rgb)
         v += CentroPlugin()
         overlay = v.show()[0][0]
