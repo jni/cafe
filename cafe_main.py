@@ -11,6 +11,7 @@ import numpy as np
 import mahotas as mh
 from mahotas import io
 from matplotlib import pyplot as plt
+from skimage import viewer
 
 # local imports
 import cafe
@@ -115,15 +116,13 @@ def run_centro(args):
 
 
 def run_interactive(args):
-    from interactive import viewer, CentroPlugin
+    from interactive import CentroPlugin
     from skimage import segmentation as seg
     image_files_list = [filter(lambda x: x.lower().endswith('.tif'),
                                os.listdir(d)) for d in args.directories]
     images = [map(mh.imread, image_files) for image_files in image_files_list]
     targets = [im[0] for im in images]
     rgbs = [np.dstack(ims[1:]) for ims in images]
-    v = viewer.ImageViewer(rgbs)
-    v += CentroPlugin()
     for s, target, rgb in zip(args.directories, targets, rgbs):
         v = viewer.ImageViewer(rgb)
         v += CentroPlugin()
