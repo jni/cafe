@@ -118,11 +118,11 @@ def run_centro(args):
 def run_interactive(args):
     from interactive import CentroPlugin
     from skimage import segmentation as seg
-    image_files_list = [filter(lambda x: x.lower().endswith('.tif'),
-                               os.listdir(d)) for d in args.directories]
+    image_files_list = [sorted(filter(lambda x: x.lower().endswith('.tif'),
+                               os.listdir(d))) for d in args.directories]
     images = [map(mh.imread, image_files) for image_files in image_files_list]
     targets = [im[0] for im in images]
-    rgbs = [np.dstack(ims[1:]) for ims in images]
+    rgbs = [np.dstack([ims[2], ims[1], ims[3]]) for ims in images]
     for s, target, rgb in zip(args.directories, targets, rgbs):
         if rgb.shape[-1] == 9:
             # some single channel images are written out as RGB...
