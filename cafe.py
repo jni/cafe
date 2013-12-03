@@ -62,7 +62,7 @@ def encode_centro_telomeres_multichannel(img, *args, **kwargs):
     """
     encoded_regions = encode_centro_telomeres(img[..., 0], img[..., 1],
                                               *args, **kwargs)
-    return encoded_regions * 64
+    return encoded_regions
 
 
 def encode_centro_telomeres(image_centro, image_telo,
