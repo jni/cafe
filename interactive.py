@@ -45,11 +45,14 @@ def compute_spot_stats(image, target, directory):
     overlay = seg.relabel_sequential(overlay)[0]
     mask = (overlay == 1)
     objects = nd.label(mask)[0]
+    property_names = (['size', 'mean'] +
+                      ['quantile-%i' % i for i in [5, 25, 50, 75, 95]])
     props = [np.concatenate(([prop.area, prop.mean_intensity], prop.quantiles))
              for prop in measure.regionprops(objects, intensity_image=target)]
     props = np.array(props)
     fout_txt = os.path.join(directory, 'measure.txt')
-    np.savetxt(fout_txt, props)
+    np.savetxt(fout_txt, props, fmt='%.2f', delimiter='\t',
+               header='\t'.join(property_names))
     fout_im = os.path.join(directory, 'mask.png')
     mh.imsave(fout_im, 64 * overlay.astype(np.uint8))
 
