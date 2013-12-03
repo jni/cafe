@@ -1,4 +1,4 @@
 cafe
 ====
 
-Centromere-associated fluorescence estimator
+Chromosome-associated fluorescence estimator
