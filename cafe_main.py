@@ -11,10 +11,10 @@ import numpy as np
 import mahotas as mh
 from mahotas import io
 from matplotlib import pyplot as plt
-from skimage import viewer
 
 # local imports
 import cafe
+import interactive
 
 
 def strip_extension(fn):
@@ -116,27 +116,17 @@ def run_centro(args):
 
 
 def run_interactive(args):
-    from interactive import CentroPlugin
-    from skimage import segmentation as seg
     image_files_list = [sorted(filter(lambda x: x.lower().endswith('.tif'),
                                os.listdir(d))) for d in args.directories]
-    images = [map(mh.imread, image_files) for image_files in image_files_list]
+    images = [[mh.imread(os.path.join(d, im)) for im in image_files]
+              for image_files in image_files_list]
     targets = [im[0] for im in images]
     rgbs = [np.dstack([ims[2], ims[1], ims[3]]) for ims in images]
     for s, target, rgb in zip(args.directories, targets, rgbs):
         if rgb.shape[-1] == 9:
             # some single channel images are written out as RGB...
             rgb = rgb[:, :, ::3]
-        v = viewer.ImageViewer(rgb)
-        v += CentroPlugin()
-        overlay = v.show()[0][0]
-        overlay = seg.relabel_sequential(overlay)[0]
-        mask = (overlay == 1)
-        target_measurement = target[mask]
-        fout_txt = os.path.join(s, 'measure.txt')
-        np.savetxt(fout_txt, target_measurement)
-        fout_im = os.path.join(s, 'mask.png')
-        mh.imsave(fout_im, 64 * overlay.astype(np.uint8))
+        interactive.compute_spot_stats(rgb, target, s)
 
 
 if __name__ == '__main__':

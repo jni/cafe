@@ -1,6 +1,10 @@
+import os
 import numpy as np
+import mahotas as mh
+from skimage import viewer
 from skimage.viewer.plugins.overlayplugin import OverlayPlugin
 from skimage.viewer.widgets import Slider
+from skimage import segmentation as seg
 import cafe
 
 
@@ -32,3 +36,14 @@ class CentroPlugin(OverlayPlugin):
         super(CentroPlugin, self).attach(image_viewer)
 
 
+def compute_spot_stats(image, target, directory):
+    v = viewer.ImageViewer(image)
+    v += CentroPlugin()
+    overlay = v.show()[0][0]
+    overlay = seg.relabel_sequential(overlay)[0]
+    mask = (overlay == 1)
+    target_measurement = target[mask]
+    fout_txt = os.path.join(directory, 'measure.txt')
+    np.savetxt(fout_txt, target_measurement)
+    fout_im = os.path.join(directory, 'mask.png')
+    mh.imsave(fout_im, 64 * overlay.astype(np.uint8))
