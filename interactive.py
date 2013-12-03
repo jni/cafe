@@ -1,10 +1,12 @@
 import os
 import numpy as np
+from scipy import ndimage as nd
 import mahotas as mh
-from skimage import viewer
 from skimage.viewer.plugins.overlayplugin import OverlayPlugin
 from skimage.viewer.widgets import Slider
+from skimage import viewer
 from skimage import segmentation as seg
+from skimage import measure
 import cafe
 
 
@@ -42,8 +44,12 @@ def compute_spot_stats(image, target, directory):
     overlay = v.show()[0][0]
     overlay = seg.relabel_sequential(overlay)[0]
     mask = (overlay == 1)
-    target_measurement = target[mask]
+    objects = nd.label(mask)[0]
+    props = [np.concatenate(([prop.area, prop.mean_intensity], prop.quantiles))
+             for prop in measure.regionprops(objects, intensity_image=target)]
+    props = np.array(props)
     fout_txt = os.path.join(directory, 'measure.txt')
-    np.savetxt(fout_txt, target_measurement)
+    np.savetxt(fout_txt, props)
     fout_im = os.path.join(directory, 'mask.png')
     mh.imsave(fout_im, 64 * overlay.astype(np.uint8))
+
