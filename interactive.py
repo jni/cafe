@@ -21,7 +21,7 @@ def encode(im, **kwargs):
 class CentroPlugin(OverlayPlugin):
     def __init__(self, *args, **kwargs):
         super(CentroPlugin, self).__init__(image_filter=encode, **kwargs)
-        
+
     def attach(self, image_viewer):
         self.add_widget(Slider('alpha', 0, 100, value=100, value_type='int'))
         self.add_widget(Slider('centro_min_size', 0, 100,
