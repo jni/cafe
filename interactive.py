@@ -21,10 +21,10 @@ class CentroPlugin(OverlayPlugin):
     def attach(self, image_viewer):
         self.add_widget(Slider('alpha', 0, 100, value=100, value_type='int'))
         self.add_widget(Slider('centro_min_size', 0, 100,
-                                value=14, value_type='int'))
+                                value=10, value_type='int'))
         self.add_widget(Slider('centro_radius', 0, 100,
                                 value=10, value_type='int'))
-        self.add_widget(Slider('telo_offset', -256, 255, value=0))
+        self.add_widget(Slider('telo_offset', -10, 10, value=0))
         self.add_widget(Slider('telo_adapt_radius', 0, 101,
                                 value=49, value_type='int'))
         self.add_widget(Slider('telo_open_radius', 0, 20,
