@@ -39,6 +39,11 @@ class CentroPlugin(OverlayPlugin):
 
 
 def compute_spot_stats(image, target, directory):
+    if image.dtype != np.uint8:
+        channel_mins = image.min(axis=0).min(axis=0)[np.newaxis, np.newaxis, :]
+        channel_maxs = image.max(axis=0).max(axis=0)[np.newaxis, np.newaxis, :]
+        image = ((image.astype(float) - channel_mins) * 255 /
+                 (channel_maxs - channel_mins)).astype(np.uint8)
     v = viewer.ImageViewer(image)
     v += CentroPlugin()
     overlay = v.show()[0][0]
