@@ -126,6 +126,7 @@ def run_interactive(args):
         if rgb.shape[-1] == 9:
             # some single channel images are written out as RGB...
             rgb = rgb[:, :, ::3]
+            target = target[..., 0]
         interactive.compute_spot_stats(rgb, target, s)
 
 
