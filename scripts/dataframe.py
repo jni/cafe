@@ -16,6 +16,6 @@ for i, (kd_fn, kd) in enumerate(zip(kd_ims.files, kds)):
         result.append([kd_fn, i, 'kd'] + list(blob_data))
 for j, (con_fn, co) in enumerate(zip(con_ims.files, cos), start=len(kd_ims)):
     for blob_data in co:
-        result.append([con_fn, j, 'con'] + blob_data)
+        result.append([con_fn, j, 'con'] + list(blob_data))
 df = pd.DataFrame(result, columns=colnames)
 df.to_csv('full-dataset.csv')
