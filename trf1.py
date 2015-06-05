@@ -55,6 +55,42 @@ def trf_quantify(im):
                            nmean, ntotl, nmaxs, eccen))
 
 
+def boxplot(im_nums, kd, values):
+    """Show a boxplot with samples grouped by `im_nums` and coloured by `kd`.
+
+    All three input lists should have the same length.
+
+    Parameters
+    ----------
+    im_nums : list of int
+        The image number for this blob.
+    kd : list of string
+        The status of a blob as either knockdown or control.
+    values : list of float
+        The actual values to be plotted.
+
+    Returns
+    -------
+    fig : Pyplot figure
+        The boxplot reference
+    """
+    palette = ['blue', 'orange', 'darkgreen', 'purple']
+    fig = plt.figure(figsize=(12, 3))
+    values_by_image = {}
+    for im_num, val in zip(im_nums, values):
+        values_by_image.setdefault(im_num, []).append(val)
+    image_kind = {im : k for im, k in zip(im_nums, kd)}
+    x_vals = np.unique(im_nums)
+    kinds = sorted(list(set(kd)))
+    for c, k in zip(palette, kinds):
+        to_plot = [[]] * len(x_vals)
+        for i in x_vals:
+            if image_kind[i] == k:
+                to_plot[i] = values_by_image[i]
+        _ = plt.boxplot(to_plot, labels=x_vals, boxprops={'color': c})
+    return fig
+
+
 def scatter(kd, control, colors=['orange', 'blue'], **kwargs):
     """Show a jittered scatterplot of the measurements.
 
