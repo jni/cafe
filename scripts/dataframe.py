@@ -13,7 +13,7 @@ cos = map(tr.trf_quantify, con_ims)
 result = []
 for i, (kd_fn, kd) in enumerate(zip(kd_ims.files, kds)):
     for blob_data in kd:
-        result.append([kd_fn, i, 'kd'] + blob_data)
+        result.append([kd_fn, i, 'kd'] + list(blob_data))
 for j, (con_fn, co) in enumerate(zip(con_ims.files, cos), start=len(kds)):
     for blob_data in co:
         result.append([con_fn, j, 'con'] + blob_data)
